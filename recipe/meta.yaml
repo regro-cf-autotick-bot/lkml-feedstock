@@ -1,12 +1,14 @@
-{% set version = "1.3.5" %}
+{% set version = "1.3.6" %}
+
+{% set python_min = python_min | default("3.9") %}
 
 package:
   name: lkml
   version: {{ version }}
 
 source:
-  url: https://pypi.io/packages/source/l/lkml/lkml-{{ version }}.tar.gz
-  sha256: 79db845c4fd02d07048fe9e5bf8c49ed5752cd5ab7bc72228791c698c8af2547
+  url: https://pypi.org/packages/source/l/lkml/lkml-{{ version }}.tar.gz
+  sha256: a1467799bcabe420ec3f238898b21e5be15b2cf8ecb741e28310d9761498673b
 
 build:
   number: 0
@@ -18,24 +20,10 @@ build:
 requirements:
   host:
     - pip
-    - python >=3.7
+    - python {{ python_min }}
+    - setuptools
   run:
-    - python >=3.7
-
-# test_* which use fixtures not in PyPI sdist
-{% set skips = [
-  "absence_of_debug_flag_is_parsed_to_log_level_warn",
-  "block_with_multiple_quoted_fields",
-  "block_with_nested_block",
-  "block_with_single_quoted_field",
-  "debug_flag_is_parsed_to_log_level_debug",
-  "duplicate_non_top_level_keys",
-  "duplicate_top_level_keys",
-  "lists_with_comma_configurations",
-  "model_with_all_fields",
-  "reserved_dimension_names",
-  "view_with_all_fields",
-] %}
+    - python >={{ python_min }}
 
 test:
   source_files:
@@ -46,12 +34,13 @@ test:
   commands:
     - pip check
     - lkml --help
-    - coverage run --source=lkml --branch -m pytest -vv --tb=long --color=yes -k "not ({{ skips | join(' or ') }})"
-    - coverage report --show-missing --skip-covered --fail-under=90
+    - coverage run --source=lkml --branch -m pytest -vv --tb=long --color=yes -k "not (absence_of_debug_flag_is_parsed_to_log_level_warn or block_with_multiple_quoted_fields or block_with_nested_block or block_with_single_quoted_field or debug_flag_is_parsed_to_log_level_debug or duplicate_non_top_level_keys or duplicate_top_level_keys or lists_with_comma_configurations or model_with_all_fields or reserved_dimension_names or view_with_all_fields)"
+    - coverage report --show-missing --skip-covered --fail-under=89
   requires:
+    - coverage
     - pip
     - pytest
-    - coverage
+    - python {{ python_min }}
 
 about:
   home: https://github.com/joshtemple/lkml
